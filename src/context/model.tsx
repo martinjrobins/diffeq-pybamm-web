@@ -102,7 +102,7 @@ export function ModelProvider({ children }: { children: React.ReactNode} ) {
 
         const options = new Options({ fwd_sens: true });
         let solver = new Solver(options);
-        const timepoints = new Vector([0, 10]);
+        const timepoints = new Vector([0, 3600.0]);
         const outputs = new Vector(Array(timepoints.length() * solver.number_of_outputs).fill(0.0));
         const doutputs = new Vector(Array(timepoints.length() * solver.number_of_outputs).fill(0.0));
         const inputs = new Vector(Array(solver.number_of_inputs).fill(1.0));
