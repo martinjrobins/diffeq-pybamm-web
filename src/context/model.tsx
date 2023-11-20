@@ -11,6 +11,10 @@ type ModelContextType = {
   doutputs: Vector | undefined;
   timepoints: Vector | undefined;
   solver: Solver | undefined;
+  spm_inputs: string[];
+  spm_input_options: string[];
+  spm_outputs: string[];
+  spm_output_options: string[];
   code: string;
   solveError: string | undefined;
   compileError: string | undefined;
@@ -18,28 +22,7 @@ type ModelContextType = {
   compiling: boolean;
 }
 
-const defaultCode = `in = [r, k]
-r { 1 }
-k { 1 }
-u_i {
-  y = 0.1,
-  z = 0,
-}
-dudt_i {
-    dydt = 0,
-    dzdt = 0,
-}
-F_i {
-    dydt,
-    0,
-}
-G_i {
-    (r * y) * (1 - (y / k)),
-    (2 * y) - z,
-}
-out_i {
-    y,
-}`;
+const defaultCode = ``;
 
 export const defaultModel: ModelContextType = {
   inputs: undefined,
@@ -55,6 +38,10 @@ export const defaultModel: ModelContextType = {
   serverError: undefined,
   compiling: false,
   solver: undefined,
+  spm_inputs: [],
+  spm_input_options: [],
+  spm_outputs: ['Voltage [V]'],
+  spm_output_options: [],
 };
 
 export const ModelContext = createContext(defaultModel);
@@ -70,6 +57,8 @@ export function useModelDispatch() {
   return useContext(ModelDispatchContext);
 }
 
+const baseUrl = "http://localhost:8000";
+
 export function ModelProvider({ children }: { children: React.ReactNode} ) {
   const [model, dispatch] = useReducer(
     modelReducer,
@@ -84,8 +73,26 @@ export function ModelProvider({ children }: { children: React.ReactNode} ) {
       }
       dispatch(action);
 
-      compileModel(model.code).then(() => {
-
+      fetch(baseUrl + '/compile/', {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          inputs: model.spm_inputs,
+          outputs: model.spm_outputs,
+        })
+      }).then((response) => {
+        if (response.ok) {
+          return response.text();
+        } else {
+          throw Error(`diffeq-pybamm-backend error: ${response.status} ${response.statusText} ${response.text()}`);
+        }
+      }).then((response) => {
+        dispatch({ type: 'setCode', code: response });
+        return compileModel(response)
+      }).then(() => {
         model.inputs?.destroy();
         model.dinputs?.destroy();
         model.outputs?.destroy();
@@ -103,11 +110,33 @@ export function ModelProvider({ children }: { children: React.ReactNode} ) {
         const lowerBound = Array(solver.number_of_inputs).fill(0.0);
         const upperBound = Array(solver.number_of_inputs).fill(2.0);
         dispatch({ type: 'compiled', solver, inputs, dinputs, outputs, doutputs, timepoints, lowerBound, upperBound });
+
       }).catch((e) => {
         // if string
         if (typeof e === 'string') {
           dispatch({ type: 'setCompileError', error: e });
         } else if (e instanceof Error) {
+          dispatch({ type: 'setServerError', error: e.toString() });
+        } else {
+          dispatch({ type: 'setServerError', error: 'Unknown error' });
+        }
+      });
+    } else if (action.type === 'setSpmOptions') {
+      fetch(baseUrl + '/compile/options', {
+        method: "GET",
+        mode: "no-cors",
+      }).then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw Error(`diffeq-pybamm-backend error: ${response.status} ${response.statusText} ${response.text()}`);
+        }
+      }).then((response) => {
+        dispatch({ type: 'setSpmInputOptions', spm_input_options: response.inputs });
+        dispatch({ type: 'setSpmOutputOptions', spm_output_options: response.outputs });
+      }).catch((e) => {
+        // if string
+        if (e instanceof Error) {
           dispatch({ type: 'setServerError', error: e.toString() });
         } else {
           dispatch({ type: 'setServerError', error: 'Unknown error' });
@@ -129,6 +158,8 @@ export function ModelProvider({ children }: { children: React.ReactNode} ) {
 
 type ModelAction = {
   type: 'compile',
+} | {
+  type: 'setSpmOptions',
 } | {
   type: 'setCode',
   code: string,
@@ -162,6 +193,18 @@ type ModelAction = {
   type: 'setCompileError',
   error: string,
 } | {
+  type: 'setSpmInputs',
+  spm_inputs: string[],
+} | {
+  type: 'setSpmOutputs',
+  spm_outputs: string[],
+} | {
+  type: 'setSpmInputOptions',
+  spm_input_options: string[],
+} | {
+  type: 'setSpmOutputOptions',
+  spm_output_options: string[],
+} | {
   type: 'setServerError',
   error: string | undefined,
 };
@@ -169,6 +212,12 @@ type ModelAction = {
 
 function modelReducer(model: ModelContextType, action: ModelAction) : ModelContextType {
   switch (action.type) {
+    case 'setSpmOptions': {
+      // this will always be caught by the middleware
+      return {
+        ...model,
+      };
+    }
     case 'setCode': {
       return {
         ...model,
@@ -303,6 +352,30 @@ function modelReducer(model: ModelContextType, action: ModelAction) : ModelConte
         ...model,
         serverError: action.error,
         compiling: false,
+      };
+    }
+    case 'setSpmInputs': {
+      return {
+        ...model,
+        spm_inputs: action.spm_inputs,
+      };
+    }
+    case 'setSpmOutputs': {
+      return {
+        ...model,
+        spm_outputs: action.spm_outputs,
+      };
+    }
+    case 'setSpmInputOptions': {
+      return {
+        ...model,
+        spm_input_options: action.spm_input_options,
+      };
+    }
+    case 'setSpmOutputOptions': {
+      return {
+        ...model,
+        spm_output_options: action.spm_output_options,
       };
     }
     default: {
