@@ -10,6 +10,7 @@ import Chart from './chart/Chart';
 import Errors from './errors/Errors';
 import Help from './help/Help';
 import ServerErrorDialog from './errors/ServerErrorDialog';
+import Spm from './spm/Spm';
 
 
 function App() {
@@ -24,10 +25,13 @@ function App() {
       <ServerErrorDialog />
       <Allotment vertical={false} >
         <Allotment vertical={true} >
-          <Allotment.Pane preferredSize={'35%'}>
+          <Allotment.Pane preferredSize={'37%'}>
             <Editor />
           </Allotment.Pane>
-          <Allotment.Pane preferredSize={'51%'}>
+          <Allotment.Pane preferredSize={'13%'}>
+            <Spm />
+          </Allotment.Pane>
+          <Allotment.Pane preferredSize={'36%'}>
             <Help />
           </Allotment.Pane>
           <Allotment.Pane preferredSize={'7%'}>

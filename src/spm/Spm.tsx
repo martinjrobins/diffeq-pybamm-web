@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { Select, MenuItem, FormControl, InputLabel, SelectChangeEvent } from '@mui/material';
+import { Select, MenuItem, FormControl, InputLabel, SelectChangeEvent, FormGroup, Stack } from '@mui/material';
 import { useModel, useModelDispatch } from '../context/model';
 
 const Spm = () => {
@@ -18,12 +18,13 @@ const Spm = () => {
   };
 
   return (
-    <div>
+    <Stack spacing={2} sx={{ m: 2 }}>
       <FormControl>
         <InputLabel id="demo-multiple-name-label">Inputs</InputLabel>
         <Select
           labelId="demo-multiple-name-label"
           id="demo-multiple-name"
+          label="Inputs"
           multiple
           value={inputs}
           onChange={handleChange1}
@@ -41,6 +42,7 @@ const Spm = () => {
           labelId="demo-multiple-name-label2"
           id="demo-multiple-name2"
           multiple
+          label="Outputs"
           value={outputs}
           onChange={handleChange2}
         >
@@ -51,7 +53,7 @@ const Spm = () => {
           ))}
         </Select>
       </FormControl>
-    </div>
+    </Stack>
   );
 };
 

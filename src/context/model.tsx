@@ -38,7 +38,7 @@ export const defaultModel: ModelContextType = {
   serverError: undefined,
   compiling: false,
   solver: undefined,
-  spm_inputs: [],
+  spm_inputs: ['Current function [A]'],
   spm_input_options: [],
   spm_outputs: ['Voltage [V]'],
   spm_output_options: [],
@@ -75,7 +75,7 @@ export function ModelProvider({ children }: { children: React.ReactNode} ) {
 
       fetch(baseUrl + '/compile/', {
         method: "POST",
-        mode: "no-cors",
+        mode: "cors",
         headers: {
           "Content-Type": "application/json",
         },
@@ -112,6 +112,7 @@ export function ModelProvider({ children }: { children: React.ReactNode} ) {
         dispatch({ type: 'compiled', solver, inputs, dinputs, outputs, doutputs, timepoints, lowerBound, upperBound });
 
       }).catch((e) => {
+        console.log('error', e)
         // if string
         if (typeof e === 'string') {
           dispatch({ type: 'setCompileError', error: e });
@@ -124,7 +125,7 @@ export function ModelProvider({ children }: { children: React.ReactNode} ) {
     } else if (action.type === 'setSpmOptions') {
       fetch(baseUrl + '/compile/options', {
         method: "GET",
-        mode: "no-cors",
+        mode: "cors",
       }).then((response) => {
         if (response.ok) {
           return response.json();
