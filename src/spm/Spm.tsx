@@ -1,5 +1,4 @@
-import React, { ChangeEvent } from 'react';
-import { Select, MenuItem, FormControl, InputLabel, SelectChangeEvent, FormGroup, Stack } from '@mui/material';
+import { Select, MenuItem, FormControl, InputLabel, SelectChangeEvent, Stack } from '@mui/material';
 import { useModel, useModelDispatch } from '../context/model';
 
 const Spm = () => {
