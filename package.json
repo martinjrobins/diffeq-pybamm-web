@@ -1,6 +1,6 @@
 {
   "name": "diffeq-web",
-  "homepage": "https://martinjrobins.github.io/diffeq-web/",
+  "homepage": "https://martinjrobins.github.io/diffeq-pybamm-web/",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
