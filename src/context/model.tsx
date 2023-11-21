@@ -247,6 +247,13 @@ function modelReducer(model: ModelContextType, action: ModelAction) : ModelConte
       } catch (e) {
         if (e instanceof Error) {
           error = e.toString();
+          // make sure we have 2 timepoints
+          if (action.timepoints.length() < 2) {
+            action.timepoints.resize(2);
+            newTimes = action.timepoints.getFloat64Array();
+            newTimes[0] = 0;
+            newTimes[1] = lastTimePoint;
+          }
         }
       }
       
@@ -299,6 +306,14 @@ function modelReducer(model: ModelContextType, action: ModelAction) : ModelConte
       } catch (e) {
         if (e instanceof Error) {
           error = e.toString();
+
+          // make sure we have 2 timepoints
+          if (model.timepoints.length() < 2) {
+            model.timepoints.resize(2);
+            newTimes = model.timepoints.getFloat64Array();
+            newTimes[0] = 0;
+            newTimes[1] = lastTimePoint;
+          }
         }
       }
       return {
@@ -334,6 +349,13 @@ function modelReducer(model: ModelContextType, action: ModelAction) : ModelConte
       } catch (e) {
         if (e instanceof Error) {
           error = e.toString();
+          // make sure we have 2 timepoints
+          if (model.timepoints.length() < 2) {
+            model.timepoints.resize(2);
+            newTimes = model.timepoints.getFloat64Array();
+            newTimes[0] = 0;
+            newTimes[1] = action.value;
+          }
         }
       }
       return {
