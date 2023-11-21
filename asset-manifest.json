@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/diffeq-pybamm-web/static/css/main.fe09f2ac.css",
-    "main.js": "/diffeq-pybamm-web/static/js/main.22f18b3d.js",
+    "main.js": "/diffeq-pybamm-web/static/js/main.c21ba581.js",
     "static/js/787.68273c93.chunk.js": "/diffeq-pybamm-web/static/js/787.68273c93.chunk.js",
     "index.html": "/diffeq-pybamm-web/index.html",
     "main.fe09f2ac.css.map": "/diffeq-pybamm-web/static/css/main.fe09f2ac.css.map",
-    "main.22f18b3d.js.map": "/diffeq-pybamm-web/static/js/main.22f18b3d.js.map",
+    "main.c21ba581.js.map": "/diffeq-pybamm-web/static/js/main.c21ba581.js.map",
     "787.68273c93.chunk.js.map": "/diffeq-pybamm-web/static/js/787.68273c93.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.fe09f2ac.css",
-    "static/js/main.22f18b3d.js"
+    "static/js/main.c21ba581.js"
   ]
 }
