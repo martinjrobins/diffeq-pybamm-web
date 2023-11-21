@@ -17,6 +17,7 @@ const Spm = () => {
     dispatch({ type: 'setSpmOutputs', spm_outputs: event.target.value as string[] });
   };
 
+
   return (
     <Stack spacing={2} sx={{ m: 2 }}>
       <FormControl>
