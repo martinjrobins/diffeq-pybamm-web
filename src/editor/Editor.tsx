@@ -20,6 +20,7 @@ function Editor() {
     <CodeMirror
       value={code}
       width="100%"
+      editable={false}
       basicSetup={{
         foldGutter: false,
         dropCursor: false,

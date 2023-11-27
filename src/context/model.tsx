@@ -1,5 +1,5 @@
 import { Dispatch, createContext, useContext, useReducer } from 'react';
-import { compileModel, Solver, Options, Vector } from '@martinjrobins/diffeq-js';
+import { compileModel, Solver, Options, Vector, OptionsJacobian, OptionsLinearSolver } from '@martinjrobins/diffeq-js';
 
 
 type ModelContextType = {
@@ -57,7 +57,7 @@ export function useModelDispatch() {
   return useContext(ModelDispatchContext);
 }
 
-const baseUrl = "http://localhost:8000";
+const baseUrl = "https://diffeq-pybamm-backend.fly.dev";
 
 export function ModelProvider({ children }: { children: React.ReactNode} ) {
   const [model, dispatch] = useReducer(
@@ -100,15 +100,18 @@ export function ModelProvider({ children }: { children: React.ReactNode} ) {
         model.timepoints?.destroy();
         model.solver?.destroy()
 
-        const options = new Options({ fwd_sens: true });
+        const options = new Options({ atol: 1.0e-8, rtol: 1e-8, fwd_sens: true, fixed_times: true, jacobian: OptionsJacobian.SPARSE_JACOBIAN, linear_solver: OptionsLinearSolver.LINEAR_SOLVER_KLU});
         let solver = new Solver(options);
-        const timepoints = new Vector([0, 3600.0]);
+        const endtime = 3600.0;
+        const n = 100;
+        const step = endtime / (n - 1);
+        const timepoints = new Vector(Array.from({length: n}, (_, i) => step * i));
         const outputs = new Vector(Array(timepoints.length() * solver.number_of_outputs).fill(0.0));
         const doutputs = new Vector(Array(timepoints.length() * solver.number_of_outputs).fill(0.0));
-        const inputs = new Vector(Array(solver.number_of_inputs).fill(1.0));
+        const inputs = new Vector(Array(solver.number_of_inputs).fill(0.5));
         const dinputs = new Vector(Array(solver.number_of_inputs).fill(0.0));
         const lowerBound = Array(solver.number_of_inputs).fill(0.0);
-        const upperBound = Array(solver.number_of_inputs).fill(2.0);
+        const upperBound = Array(solver.number_of_inputs).fill(1.0);
         dispatch({ type: 'compiled', solver, inputs, dinputs, outputs, doutputs, timepoints, lowerBound, upperBound });
 
       }).catch((e) => {
@@ -233,27 +236,12 @@ function modelReducer(model: ModelContextType, action: ModelAction) : ModelConte
     }
     case 'compiled': {
       
-      // make sure we have 2 timepoints
-      let newTimes = action.timepoints.getFloat64Array();
-      const lastTimePoint = newTimes[newTimes.length - 1];
-      action.timepoints.resize(2);
-      newTimes = action.timepoints.getFloat64Array();
-      newTimes[0] = 0;
-      newTimes[1] = lastTimePoint;
-
       let error = undefined;
       try {
         action.solver.solve_with_sensitivities(action.timepoints, action.inputs, action.dinputs, action.outputs, action.doutputs)
       } catch (e) {
         if (e instanceof Error) {
           error = e.toString();
-          // make sure we have 2 timepoints
-          if (action.timepoints.length() < 2) {
-            action.timepoints.resize(2);
-            newTimes = action.timepoints.getFloat64Array();
-            newTimes[0] = 0;
-            newTimes[1] = lastTimePoint;
-          }
         }
       }
       
@@ -295,25 +283,12 @@ function modelReducer(model: ModelContextType, action: ModelAction) : ModelConte
       const newdInputs = model.dinputs.getFloat64Array();
       newInputs[action.index] = action.value;
       newdInputs[action.index] = action.dvalue;
-      const lastTimePoint = model.timepoints.get(model.timepoints.length() - 1);
-      model.timepoints.resize(2);
-      let newTimes = model.timepoints.getFloat64Array();
-      newTimes[0] = 0;
-      newTimes[1] = lastTimePoint;
       let error = undefined;
       try {
         model.solver.solve_with_sensitivities(model.timepoints, model.inputs, model.dinputs, model.outputs, model.doutputs)
       } catch (e) {
         if (e instanceof Error) {
           error = e.toString();
-
-          // make sure we have 2 timepoints
-          if (model.timepoints.length() < 2) {
-            model.timepoints.resize(2);
-            newTimes = model.timepoints.getFloat64Array();
-            newTimes[0] = 0;
-            newTimes[1] = lastTimePoint;
-          }
         }
       }
       return {
@@ -339,23 +314,21 @@ function modelReducer(model: ModelContextType, action: ModelAction) : ModelConte
       if (model.timepoints === undefined || model.outputs === undefined || model.solver === undefined || model.inputs === undefined) {
         throw Error('timepoints not defined');
       }
-      model.timepoints.resize(2);
-      let newTimes = model.timepoints.getFloat64Array();
-      newTimes[0] = 0;
-      newTimes[1] = action.value;
+      const endtime = action.value;
+      const n = 100;
+      const step = endtime / (n - 1);
+      const times = Array.from({length: n}, (_, i) => step * i);
+      model.timepoints.resize(times.length);
+      const newTimes = model.timepoints.getFloat64Array();
+      for (let i = 0; i < times.length; i++) {
+        newTimes[i] = times[i];
+      }
       let error = undefined;
       try {
         model.solver.solve(model.timepoints, model.inputs, model.outputs)
       } catch (e) {
         if (e instanceof Error) {
           error = e.toString();
-          // make sure we have 2 timepoints
-          if (model.timepoints.length() < 2) {
-            model.timepoints.resize(2);
-            newTimes = model.timepoints.getFloat64Array();
-            newTimes[0] = 0;
-            newTimes[1] = action.value;
-          }
         }
       }
       return {

@@ -25,11 +25,11 @@ function App() {
       <ServerErrorDialog />
       <Allotment vertical={false} >
         <Allotment vertical={true} >
-          <Allotment.Pane preferredSize={'37%'}>
-            <Editor />
-          </Allotment.Pane>
           <Allotment.Pane preferredSize={'13%'}>
             <Spm />
+          </Allotment.Pane>
+          <Allotment.Pane preferredSize={'37%'}>
+            <Editor />
           </Allotment.Pane>
           <Allotment.Pane preferredSize={'36%'}>
             <Help />

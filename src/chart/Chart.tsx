@@ -40,9 +40,13 @@ function Chart() {
       return output;
     })
   }
+  
 
   const outputs = convert_to_array(outputs_array);
   const doutputs = convert_to_array(doutputs_array);
+
+  console.log('times', times)
+  console.log('outputs', outputs[0])
   let plotData: Data[] = [];
   for (let i = 0; i < noutputs; i++) {
     // upper bound
